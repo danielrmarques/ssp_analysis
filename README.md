@@ -5,7 +5,7 @@ Este projeto nasceu de uma curisidade com relação a violência em São Paulo e
 
 ## Disclaimer
 
-Este conteúdo é fornecido apenas para fins informativos e educacionais. Não deve ser interpretado como aconselhamento profissional ou utilizado para fins comerciais. Todas as informações apresentadas são fornecidas de boa fé e são baseadas em fontes consideradas confiáveis. No entanto, não garantimos a precisão, integridade ou atualidade dessas informações. Os usuários são incentivados a realizar suas próprias pesquisas e consultar profissionais qualificados para obter orientação específica para suas necessidades. Não nos responsabilizamos por quaisquer perdas ou danos decorrentes do uso ou confiança nas informações fornecidas neste conteúdo.
+Este conteúdo é fornecido apenas para fins informativos e educacionais. Não deve ser interpretado como aconselhamento profissional ou utilizado para fins comerciais. Todas as informações apresentadas são fornecidas de boa fé e são baseadas em fontes consideradas confiáveis, fornecidas pelo portal da transparência da Secretaria de  Segurança Pública de São Paulo. No entanto, não garanto a precisão, integridade ou atualidade dessas informações. Os usuários são incentivados a realizar suas próprias pesquisas e consultar profissionais qualificados para obter orientação específica para suas necessidades. Não me responsabilizo por quaisquer perdas ou danos decorrentes do uso ou confiança nas informações fornecidas neste conteúdo.
 
 ## Fontes de Dados
 
@@ -49,12 +49,12 @@ Arquivo: VeiculosSubtraidos_2023.csv
     10  DESCR_TIPO_VEICULO   
     11  DESCR_MARCA_VEICULO  
 
-Nota: Não foi feita nenhuma manipulação e/ou tratamento de dados. Existem bairros como números, duplicados devido a acentuação, enfim. Este projeto não tem o intuito de ser o estado da arte, somente servir de exemplo de usabilidade do que daria para ser feito com informações públicas.
+**Nota**: Não foi feita nenhuma manipulação e/ou tratamento de dados. Existem bairros como números, duplicados devido a acentuação, enfim. Este projeto não tem o intuito de ser o estado da arte, somente servir de exemplo de usabilidade do que daria para ser feito com informações públicas.
 
 Sinta-se a vontade para baixar os arquivos de outros anos e substituir e fazer suas analises. Não se esqueça de manter a mesma estrutura!
 
 Aproveite!
 
 Um grande abraço,
-Daniel Marques
-dnmarques@gmail.com
+
+Daniel Marques (dnmarques@gmail.com)
