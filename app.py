@@ -1,18 +1,17 @@
 import streamlit as st
-from streamlit_folium import folium_static
+from streamlit_folium import folium_static, st_folium
 import folium
 from folium.plugins import HeatMap
 
+import plotly.express as px
 import pandas as pd
-import altair as alt
-import calendar
-
 import pathlib
 
 PATH = pathlib.Path(__file__).parent.absolute()
 
-
 meses = {1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril', 5: 'Maio', 6: 'Junho',7: 'Julho', 8: 'Agosto', 9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'}
+
+dias = {0: 'Segunda', 1: 'Terça', 2: 'Quarta', 3: 'Quinta', 4: 'Sexta', 5: 'Sábado', 6: 'Domingo'}
 
 @st.cache_resource
 def loadData(servico):
@@ -59,7 +58,7 @@ def build_sidebar():
                 filtered_data = filtered_data[filtered_data["BAIRRO"] == bairro]
 
     footer_html = """<div style='text-align: left;'>
-                        <p>Developed with Streamlit by Daniel Marques</p>
+                        <p>Developed with Streamlit <br>by Daniel Marques </p>
                     </div>"""
     st.markdown(footer_html, unsafe_allow_html=True)
 
@@ -67,58 +66,70 @@ def build_sidebar():
 
 
 def build_main(servico, cidade, bairro, filtered_data):
-
+    
     with st.spinner("Carregando..."):
 
+        st.markdown("Mapa de calor das ocorrências")
+        m = folium.Map(location=[-23.55, -46.63], zoom_start=10)
+        HeatMap(data=[[row['LATITUDE'], row['LONGITUDE']] for index, row in filtered_data.iterrows()], radius=10).add_to(m)
+        folium_static(m,width=900,height=500)
+
         col1, col2 = st.columns(2, gap='large')
+        col3, col4 = st.columns(2, gap='large')
+
+        filtered_data['DATA_OCORRENCIA_BO'] = pd.to_datetime(filtered_data['DATA_OCORRENCIA_BO'], format='%Y-%m-%d')
+        filtered_data['HORA_OCORRENCIA'] = pd.to_datetime(filtered_data['HORA_OCORRENCIA'], format='%H:%M:%S')
+
         with col1:
-            st.subheader("Mapa de calor das ocorrências")
-            m = folium.Map(location=[-23.55, -46.63], zoom_start=10)
-            HeatMap(data=[[row['LATITUDE'], row['LONGITUDE']] for index, row in filtered_data.iterrows()], radius=10).add_to(m)
-            folium_static(m)
+            
+            filtered_data['MES'] = filtered_data['DATA_OCORRENCIA_BO'].dt.month
+
+            dfMes = filtered_data.groupby(['MES']).size().reset_index(name='Total')
+            dfMes = dfMes.sort_values(by='MES')
+            dfMes["Mês"] = dfMes['MES'].map(meses)
+            
+            fig_date = px.bar(dfMes, x="Mês",y="Total",text_auto='.2s',title="Ocorrências ao longo do ano")
+            col1.plotly_chart(fig_date,use_container_width=True)
 
         with col2:
-            st.subheader("Evolução das ocorrências ao longo do ano")
+            
+            filtered_data['DIA'] = filtered_data['DATA_OCORRENCIA_BO'].dt.dayofweek
+            filtered_data['HORA'] = filtered_data['HORA_OCORRENCIA'].dt.hour
 
-            filtered_data['DATA_OCORRENCIA_BO'] = pd.to_datetime(filtered_data['DATA_OCORRENCIA_BO'], format='%Y-%m-%d')
-            filtered_data['MES'] = filtered_data['DATA_OCORRENCIA_BO'].dt.month            
+            dfDiaHora = filtered_data.groupby(['DIA','HORA']).size().reset_index(name='Total')
+            dfDiaHora = dfDiaHora.sort_values(by=['DIA', 'HORA'])
+            dfDiaHora = dfDiaHora.rename(columns={'HORA': 'Hora'})            
+            dfDiaHora["Dia"] = dfDiaHora['DIA'].map(dias)
 
-            monthly_counts = filtered_data.groupby("MES").size()
-            monthly_counts = monthly_counts.reset_index().rename(columns={"MES": "Mês", 0: "Quantidade"})
-            monthly_counts = monthly_counts.sort_values(by='Mês')            
-            monthly_counts["Display"] = monthly_counts['Mês'].map(meses)
+            fig_diahora = px.density_heatmap(dfDiaHora,x="Dia",y="Hora",z="Total",histfunc="sum", title="Dias e horários de maiores ocorrências")
+            fig_diahora.layout['coloraxis']['colorbar']['title'] = 'Qtde'
+            col2.plotly_chart(fig_diahora,use_container_width=True)
 
-            chart = alt.Chart(monthly_counts).mark_bar().encode(
-                x=alt.X('Display', title='Mês',sort=list(meses.values())),
-                y=alt.Y('Quantidade', title='Quantidade')
-            ).properties(width=680, height=550)
-            st.altair_chart(chart)
-        
+        with col3:
+            if bairro == "Todos":                
+                ocorrenciasPorBairro = filtered_data["BAIRRO"].value_counts().nlargest(15).reset_index().rename(columns={"BAIRRO": "Bairro", "count": "Qtde"})
+                ocorrenciasPorBairro = ocorrenciasPorBairro.sort_values(by='Qtde', ascending=True)
+                fig_ocorrenciasPorBairro = px.bar(ocorrenciasPorBairro, x="Qtde", y="Bairro", orientation='h',text_auto=True, title="Bairros com maior número de ocorrências")
+                col3.plotly_chart(fig_ocorrenciasPorBairro,use_container_width=True)
+                
+            else:                
+                ocorrenciasPorLogradouro = filtered_data["LOGRADOURO"].value_counts().nlargest(15).reset_index().rename(columns={"LOGRADOURO": "Logradouro", "count": "Qtde"})
+                ocorrenciasPorLogradouro = ocorrenciasPorLogradouro.sort_values(by='Qtde', ascending=True)
+                fig_ocorrenciasPorLogradouro = px.bar(ocorrenciasPorLogradouro, x="Qtde", y="Logradouro", orientation='h',text_auto=True, title="Logradouros com maior número de ocorrências")
+                col3.plotly_chart(fig_ocorrenciasPorLogradouro,use_container_width=True)
 
-        col21, col22 = st.columns(2, gap='large')
-        with col21:
-
-            if bairro == "Todos":
-                st.subheader("Bairros com maior número de ocorrências")
-                ocorrenciasPorBairro = filtered_data["BAIRRO"].value_counts().reset_index().rename(columns={"BAIRRO": "Bairro", "count": "Quantidade"})
-                st.dataframe(ocorrenciasPorBairro,hide_index=True,use_container_width=True)
-            else:
-                st.subheader(f"Endereços com maiores ocorrências no bairro {bairro}")
-                ocorrenciasPorLogradouro = filtered_data["LOGRADOURO"].value_counts().reset_index().rename(columns={"LOGRADOURO": "Logradouro", "count": "Quantidade"})
-                st.dataframe(ocorrenciasPorLogradouro,hide_index=True,use_container_width=True)
-
-        with col22:
+        with col4:
             if servico == "Veículos Subtraídos":
-                st.subheader("Automóveis mais subtraídos")
-                veículosMaisRoubados = filtered_data["DESCR_MARCA_VEICULO"].value_counts().nlargest(15).reset_index()
-                veículosMaisRoubados.columns = ["Marca/Modelo", "Qtde"]
-                st.dataframe(veículosMaisRoubados,hide_index=True,use_container_width=True)
+                veículosSubtraidos = filtered_data["DESCR_MARCA_VEICULO"].value_counts().nlargest(15).reset_index().rename(columns={"DESCR_MARCA_VEICULO": "Marca/Modelo", "count": "Qtde"})                
+                veículosSubtraidos = veículosSubtraidos.sort_values(by='Qtde', ascending=True)
+                fig_veiculosSubtraidos = px.bar(veículosSubtraidos, x="Qtde", y="Marca/Modelo", orientation='h',text_auto=True, title="Veículos mais subtraídos")
+                col4.plotly_chart(fig_veiculosSubtraidos,use_container_width=True)
 
             elif servico == "Celulares Subtraídos":
-                st.subheader("Celulares mais subtraídos")
-                celularesMaisRoubados = filtered_data["MARCA_OBJETO"].value_counts().nlargest(15).reset_index()
-                celularesMaisRoubados.columns = ["Aparelho/Modelo", "Qtde"]
-                st.dataframe(celularesMaisRoubados,hide_index=True,use_container_width=True)
+                celularesSubtraidos = filtered_data["MARCA_OBJETO"].value_counts().nlargest(15).reset_index().rename(columns={"MARCA_OBJETO": "Aparelho/Modelo", "count": "Qtde"})
+                celularesSubtraidos = celularesSubtraidos.sort_values(by='Qtde', ascending=True)
+                fig_celularesSubtraidos = px.bar(celularesSubtraidos, x="Qtde", y="Aparelho/Modelo", orientation='h',text_auto=True, title="Celulares mais subtraídos")
+                col4.plotly_chart(fig_celularesSubtraidos,use_container_width=True)
 
 
 st.set_page_config(layout="wide")
@@ -127,7 +138,7 @@ with st.sidebar:
     servico, cidade, bairro, filtered_data = build_sidebar()
 
 st.write('<style>div.block-container{padding-top:2rem;}</style>', unsafe_allow_html=True)
-st.header("Ocorrências - Secretaria de Segurança Pública de São Paulo")
+st.subheader("Ocorrências - Secretaria de Segurança Pública de São Paulo")
 
 if filtered_data is not None:
     build_main(servico, cidade, bairro, filtered_data)
