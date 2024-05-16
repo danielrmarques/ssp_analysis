@@ -13,7 +13,7 @@ As informações informações utilizadas nesse projeto foram obtidas através d
 
 Link [text](https://www.ssp.sp.gov.br/estatistica/consultas)
 
-Para reduzir o tamanho do arquivo e deixá-lo com menos de 50MB e em formato CSV, separado por ";", foi feita a importação do arquivo original no formato "xlsx" e deixadas as seguintes colunas:
+Para reduzir o tamanho do arquivo e deixá-lo com menos de 50MB e em formato CSV, separado por ";", foi feita a importação do arquivo original no formato "xlsx" e deixado com as seguintes colunas:
 
 Arquivo: CelularesSubtraidos_2023.csv
 
@@ -49,7 +49,7 @@ Arquivo: VeiculosSubtraidos_2023.csv
     10  DESCR_TIPO_VEICULO   
     11  DESCR_MARCA_VEICULO  
 
-**Nota**: Não foi feita nenhuma manipulação e/ou tratamento de dados. Existem bairros como números, duplicados devido a acentuação, enfim. Este projeto não tem o intuito de ser o estado da arte, somente servir de exemplo de usabilidade do que daria para ser feito com informações públicas.
+**Nota**: Não foi feita nenhuma manipulação e/ou tratamento de dados, somente exclusão de colunas. Existem bairros como números, duplicados devido a acentuação. Este projeto não tem o intuito de ser o estado da arte, somente servir de exemplo de usabilidade do que daria para ser feito com informações públicas e transformar dados em informações, além de ter tido como motivador minha curiosidade sobre o comportamento da violência em São Paulo.
 
 Sinta-se a vontade para baixar os arquivos de outros anos e substituir e fazer suas analises. Não se esqueça de manter a mesma estrutura!
 

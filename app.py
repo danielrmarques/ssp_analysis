@@ -40,6 +40,7 @@ def build_sidebar():
     
     st.image(str(PATH) + "/images/Logo_SSP.png")
 
+    st.sidebar.caption("** Dados utlizados de 2023")
     servico = st.sidebar.selectbox("Selecione o serviço:", ["Veículos Subtraídos","Celulares Subtraídos"])
 
     if servico:
@@ -57,13 +58,10 @@ def build_sidebar():
             if bairro and bairro != "Todos":
                 filtered_data = filtered_data[filtered_data["BAIRRO"] == bairro]
 
-    footer_html = """<div style='text-align: left;'>
-                        <p>Developed with Streamlit <br>by Daniel Marques </p>
-                    </div>"""
+    footer_html = "<div style='text-align: left;'><br>Developed with Streamlit and Python<br>by Daniel Marques<br></p></div>"
     st.markdown(footer_html, unsafe_allow_html=True)
 
     return servico, cidade, bairro, filtered_data
-
 
 def build_main(servico, cidade, bairro, filtered_data):
     
